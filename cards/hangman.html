@@ -61,14 +61,25 @@
     font-size: 10px;
     cursor: pointer;
   }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 </style>
 </HEAD>
 <BODY>
 <div id="hangman-card">
   <p id="hangman-title">Hangman</p>
-  <div id="hangman-figure"></div>
+  <div id="hangman-figure" role="img" aria-label=""></div>
   <div id="hangman-word"></div>
-  <div id="hangman-status"></div>
+  <div id="hangman-status" aria-live="polite"></div>
   <div id="hangman-keyboard"></div>
   <button id="hangman-reset" onclick="startHangman()">Play Again</button>
 </div>
@@ -91,6 +102,17 @@
     "  +--+\n  |  |\n  O  |\n /|  |\n=====",
     "  +--+\n  |  |\n  O  |\n /|\\ |\n=====",
     "  +--+\n  |  |\n  O  |\n /|\\ |\n /  \\====="
+  ];
+
+  var HANGMAN_STAGE_DESCRIPTIONS = [
+    "Empty gallows, no wrong guesses yet",
+    "Gallows post drawn, 1 wrong guess",
+    "Gallows with crossbar drawn, 2 wrong guesses",
+    "Head added to hanging figure, 3 wrong guesses",
+    "Head and body added to hanging figure, 4 wrong guesses",
+    "Head, body, and one arm added to hanging figure, 5 wrong guesses",
+    "Head, body, and both arms added to hanging figure, 6 wrong guesses",
+    "Full hanging figure with arms and legs drawn, out of guesses"
   ];
 
   function startHangman() {
@@ -130,7 +152,9 @@
     var statusEl = document.getElementById("hangman-status");
     var keyboardEl = document.getElementById("hangman-keyboard");
 
-    figureEl.textContent = HANGMAN_STAGES[Math.min(wrongCount, MAX_WRONG)];
+    var stageIndex = Math.min(wrongCount, MAX_WRONG);
+    figureEl.textContent = HANGMAN_STAGES[stageIndex];
+    figureEl.setAttribute("aria-label", HANGMAN_STAGE_DESCRIPTIONS[stageIndex]);
 
     var display = hangmanWord.split("").map(function (ch) {
       return guessedLetters.indexOf(ch) !== -1 ? ch : "_";
@@ -154,6 +178,7 @@
     alphabet.forEach(function (letter) {
       var btn = document.createElement("button");
       btn.textContent = letter;
+      btn.setAttribute("aria-label", "Guess letter " + letter);
       btn.disabled = gameOver || guessedLetters.indexOf(letter) !== -1;
       btn.onclick = function () {
         guessLetter(letter);
